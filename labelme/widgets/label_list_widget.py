@@ -70,7 +70,8 @@ class HTMLDelegate(QtWidgets.QStyledItemDelegate):
 class LabelListWidgetItem(QtGui.QStandardItem):
     def __init__(self, text=None, shape=None):
         super(LabelListWidgetItem, self).__init__()
-        self.setText(text)
+        self.text = text
+        self.setText(self.text)
         self.setShape(shape)
 
         self.setCheckable(True)

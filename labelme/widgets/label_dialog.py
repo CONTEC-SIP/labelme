@@ -30,7 +30,7 @@ class LabelQLineEdit(QtWidgets.QLineEdit):
 class LabelDialog(QtWidgets.QDialog):
     def __init__(
         self,
-        text="Enter object label",
+        text="select object label",
         parent=None,
         labels=None,
         sort_labels=True,
@@ -44,7 +44,9 @@ class LabelDialog(QtWidgets.QDialog):
         self._fit_to_content = fit_to_content
 
         super(LabelDialog, self).__init__(parent)
+        self.setWindowTitle('object label')
         self.edit = LabelQLineEdit()
+        self.edit.setEnabled(False)
         self.edit.setPlaceholderText(text)
         self.edit.setValidator(labelme.utils.labelValidator())
         self.edit.editingFinished.connect(self.postProcess)
@@ -52,6 +54,7 @@ class LabelDialog(QtWidgets.QDialog):
             self.edit.textChanged.connect(self.updateFlags)
         self.edit_group_id = QtWidgets.QLineEdit()
         self.edit_group_id.setPlaceholderText("Group ID")
+        self.edit_group_id.setVisible(False)
         self.edit_group_id.setValidator(
             QtGui.QRegExpValidator(QtCore.QRegExp(r"\d*"), None)
         )
@@ -71,7 +74,6 @@ class LabelDialog(QtWidgets.QDialog):
         bb.button(bb.Cancel).setIcon(labelme.utils.newIcon("undo"))
         bb.accepted.connect(self.validate)
         bb.rejected.connect(self.reject)
-        layout.addWidget(bb)
         # label_list
         self.labelList = QtWidgets.QListWidget()
         if self._fit_to_content["row"]:
@@ -95,6 +97,7 @@ class LabelDialog(QtWidgets.QDialog):
         self.labelList.itemDoubleClicked.connect(self.labelDoubleClicked)
         self.edit.setListWidget(self.labelList)
         layout.addWidget(self.labelList)
+        layout.addWidget(bb)
         # label_flags
         if flags is None:
             flags = {}

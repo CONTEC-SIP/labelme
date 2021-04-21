@@ -31,6 +31,7 @@ from labelme.widgets import LabelListWidgetItem
 from labelme.widgets import ToolBar
 from labelme.widgets import UniqueLabelQListWidget
 from labelme.widgets import ZoomWidget
+from labelme.widgets import preview_dialog
 
 
 # FIXME
@@ -371,6 +372,15 @@ class MainWindow(QtWidgets.QMainWindow):
             self.tr("Move and edit the selected polygons"),
             enabled=False,
         )
+        preview = action(
+            self.tr("Show &Preview"),
+            self.showPreview,
+            shortcuts["show_preview"],
+            "feBlend-icon",
+            self.tr("Show preview mask"),
+            checkable=True,
+            enabled=False,
+        )
 
         delete = action(
             self.tr("Delete Polygons"),
@@ -546,6 +556,30 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         fill_drawing.trigger()
 
+        hide_shape = action(
+            self.tr("Hide This Category Shapes"),
+            self.polygon_labels_select_hide,
+            "hide this",
+            self.tr("Hide the shapes of the selected polygon"),
+            enabled=True,
+        )
+
+        hide_category = action(
+            self.tr("Hide labels"),
+            functools.partial(self.label_list_selection_hide, False),
+            "hide this",
+            self.tr("Hide the shapes of the selected category"),
+            enabled=True,
+        )
+
+        show_category = action(
+            self.tr("Show labels"),
+            functools.partial(self.label_list_selection_hide, True),
+            "Show this",
+            self.tr("Show the shapes of the selected category"),
+            enabled=True,
+        )
+
         # Lavel list context menu.
         labelMenu = QtWidgets.QMenu()
         utils.addActions(labelMenu, (edit, delete))
@@ -553,6 +587,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.labelList.customContextMenuRequested.connect(
             self.popLabelListMenu
         )
+
+        uniqLabelMenu = QtWidgets.QMenu()
+        utils.addActions(uniqLabelMenu, (hide_category, show_category))
+        self.uniqLabelList.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.uniqLabelList.customContextMenuRequested.connect(
+            self.popUniqLabelListMenu
+        )
+
 
         # Store actions for further handling.
         self.actions = utils.struct(
@@ -574,6 +616,7 @@ class MainWindow(QtWidgets.QMainWindow):
             removePoint=removePoint,
             createMode=createMode,
             editMode=editMode,
+            preview=preview,
             createRectangleMode=createRectangleMode,
             createCircleMode=createCircleMode,
             createLineMode=createLineMode,
@@ -607,15 +650,11 @@ class MainWindow(QtWidgets.QMainWindow):
             # menu shown at right click
             menu=(
                 createMode,
-                createRectangleMode,
-                createCircleMode,
-                createLineMode,
-                createPointMode,
-                createLineStripMode,
                 editMode,
                 edit,
                 copy,
                 delete,
+                preview,
                 undo,
                 undoLastPoint,
                 addPointToEdge,
@@ -624,6 +663,7 @@ class MainWindow(QtWidgets.QMainWindow):
             onLoadActive=(
                 close,
                 createMode,
+                preview,
                 createRectangleMode,
                 createCircleMode,
                 createLineMode,
@@ -645,6 +685,7 @@ class MainWindow(QtWidgets.QMainWindow):
             help=self.menu(self.tr("&Help")),
             recentFiles=QtWidgets.QMenu(self.tr("Open &Recent")),
             labelList=labelMenu,
+            uniqLabelList=uniqLabelMenu,
         )
 
         utils.addActions(
@@ -677,6 +718,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 None,
                 fill_drawing,
                 None,
+                preview,
                 hideAll,
                 showAll,
                 None,
@@ -711,14 +753,16 @@ class MainWindow(QtWidgets.QMainWindow):
             openNextImg,
             openPrevImg,
             save,
-            deleteFile,
             None,
             createMode,
             editMode,
-            copy,
             delete,
+            None,
+            preview,
+            hideAll,
+            showAll,
+            None,
             undo,
-            brightnessContrast,
             None,
             zoom,
             fitWidth,
@@ -821,11 +865,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menus.edit.clear()
         actions = (
             self.actions.createMode,
-            self.actions.createRectangleMode,
-            self.actions.createCircleMode,
-            self.actions.createLineMode,
-            self.actions.createPointMode,
-            self.actions.createLineStripMode,
             self.actions.editMode,
         )
         utils.addActions(self.menus.edit, actions + self.actions.editMenu)
@@ -851,6 +890,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def setClean(self):
         self.dirty = False
         self.actions.save.setEnabled(False)
+        self.actions.preview.setEnabled(True)
         self.actions.createMode.setEnabled(True)
         self.actions.createRectangleMode.setEnabled(True)
         self.actions.createCircleMode.setEnabled(True)
@@ -985,9 +1025,34 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 raise ValueError("Unsupported createMode: %s" % createMode)
         self.actions.editMode.setEnabled(not edit)
+        self.actions.preview.setEnabled(True)
 
     def setEditMode(self):
         self.toggleDrawMode(True)
+
+    def showPreview(self):
+        def format_shape(s):
+            data = s.other_data.copy()
+            data.update(
+                dict(
+                    label=s.label.encode("utf-8") if PY2 else s.label,
+                    points=[(p.x(), p.y()) for p in s.points],
+                    group_id=s.group_id,
+                    shape_type=s.shape_type,
+                    flags=s.flags,
+                )
+            )
+            return data
+
+        shapes = [format_shape(item.shape()) for item in self.labelList]
+        img = utils.img_data_to_arr(self.imageData)
+        preview = preview_dialog.PreviewDialog(
+            img=img,
+            polygons=shapes,
+            parent=self
+        )
+        preview.setModal(False)
+        preview.show()
 
     def updateFileMenu(self):
         current = self.filename
@@ -1008,6 +1073,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def popLabelListMenu(self, point):
         self.menus.labelList.exec_(self.labelList.mapToGlobal(point))
+
+    def popUniqLabelListMenu(self, point):
+        self.menus.uniqLabelList.exec_(self.uniqLabelList.mapToGlobal(point))
 
     def validateLabel(self, label):
         # no validation
@@ -1414,6 +1482,36 @@ class MainWindow(QtWidgets.QMainWindow):
     def togglePolygons(self, value):
         for item in self.labelList:
             item.setCheckState(Qt.Checked if value else Qt.Unchecked)
+
+    def polygon_labels_select_hide(self, item):
+        if item and not isinstance(item, LabelListWidgetItem):
+            raise TypeError("item must be LabelListWidgetItem type")
+
+        if not self.canvas.editing():
+            return
+        if not item:
+            item = self.currentItem()
+        if item is None:
+            return
+
+        shape = item.shape()
+        if shape is None:
+            return
+
+        for item in self.labelList:
+            if item.text == shape.label:
+                item.setCheckState(Qt.Unchecked)
+
+    # uniqlabellist event, connect later
+    def label_list_selection_hide(self, value):
+        items = self.uniqLabelList.selectedItems()
+        text = None
+        if items:
+            text = items[0].data(Qt.UserRole)
+
+        for item in self.labelList:
+            if text == item.text:
+                item.setCheckState(Qt.Checked if value else Qt.Unchecked)
 
     def loadFile(self, filename=None):
         """Load the specified file, or the last opened file if None."""
@@ -2008,6 +2106,8 @@ class MainWindow(QtWidgets.QMainWindow):
             ".%s" % fmt.data().decode().lower()
             for fmt in QtGui.QImageReader.supportedImageFormats()
         ]
+
+        extensions += [".json"]
 
         images = []
         for root, dirs, files in os.walk(folderPath):

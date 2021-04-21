@@ -1,6 +1,7 @@
 import copy
 import math
 
+from PyQt5.QtGui import QFont
 from qtpy import QtCore
 from qtpy import QtGui
 
@@ -41,7 +42,7 @@ class Shape(object):
     vertex_fill_color = DEFAULT_VERTEX_FILL_COLOR
     hvertex_fill_color = DEFAULT_HVERTEX_FILL_COLOR
     point_type = P_ROUND
-    point_size = 8
+    point_size = 1
     scale = 1.0
 
     def __init__(
@@ -65,7 +66,7 @@ class Shape(object):
         self._highlightMode = self.NEAR_VERTEX
         self._highlightSettings = {
             self.NEAR_VERTEX: (4, self.P_ROUND),
-            self.MOVE_VERTEX: (1.5, self.P_SQUARE),
+            self.MOVE_VERTEX: (4, self.P_ROUND),
         }
 
         self._closed = False
@@ -202,6 +203,8 @@ class Shape(object):
             path.addRect(point.x() - d / 2, point.y() - d / 2, d, d)
         elif shape == self.P_ROUND:
             path.addEllipse(point, d / 2.0, d / 2.0)
+            # Future plan
+            # path.addText(point, QFont(), f'{i}')
         else:
             assert False, "unsupported vertex shape"
 
