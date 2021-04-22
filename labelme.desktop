@@ -2,7 +2,7 @@
 Name=Segmentation
 Comment=Image Polygonal Annotation with Python
 Exec=labelme
-Icon=/home/contec/labelme/labelme/icons/icon.png
+Icon=segmentation.png
 Terminal=false
 Type=Application
 Categories=Graphics;RasterGraphics;
