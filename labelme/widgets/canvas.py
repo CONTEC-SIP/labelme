@@ -380,8 +380,9 @@ class Canvas(QtWidgets.QWidget):
                 group_mode = int(ev.modifiers()) == QtCore.Qt.ControlModifier
                 self.selectShapePoint(pos, multiple_selection_mode=group_mode)
                 self.prevPoint = pos
-                self.overrideCursor(CURSOR_GRAB)
-                self.panning = True
+                if not self.selectedShapes:
+                    self.overrideCursor(CURSOR_GRAB)
+                    self.panning = True
                 self.repaint()
         elif ev.button() == QtCore.Qt.RightButton and self.editing():
             group_mode = int(ev.modifiers()) == QtCore.Qt.ControlModifier
