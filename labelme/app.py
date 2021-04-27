@@ -383,6 +383,48 @@ class MainWindow(QtWidgets.QMainWindow):
             checkable=True,
             enabled=False,
         )
+        select_label_0 = action(
+            self.tr("none"),
+            functools.partial(self.select_label_list_idx, 0),
+            shortcuts["class_none"],
+            "tag",
+        )
+        select_label_1 = action(
+            self.tr("building"),
+            functools.partial(self.select_label_list_idx, 1),
+            shortcuts["class_building"],
+            "tag",
+        )
+        select_label_2 = action(
+            self.tr("road"),
+            functools.partial(self.select_label_list_idx, 2),
+            shortcuts["class_road"],
+            "tag",
+        )
+        select_label_3 = action(
+            self.tr("plastic house"),
+            functools.partial(self.select_label_list_idx, 3),
+            shortcuts["class_plastic_house"],
+            "tag",
+        )
+        select_label_4 = action(
+            self.tr("farmland"),
+            functools.partial(self.select_label_list_idx, 4),
+            shortcuts["class_farmland"],
+            "tag",
+        )
+        select_label_5 = action(
+            self.tr("forest"),
+            functools.partial(self.select_label_list_idx, 5),
+            shortcuts["class_forest"],
+            "tag",
+        )
+        select_label_6 = action(
+            self.tr("waterside"),
+            functools.partial(self.select_label_list_idx, 6),
+            shortcuts["class_waterside"],
+            "tag",
+        )
 
         delete = action(
             self.tr("Delete Polygons"),
@@ -619,6 +661,13 @@ class MainWindow(QtWidgets.QMainWindow):
             createMode=createMode,
             editMode=editMode,
             preview=preview,
+            select_label_0=select_label_0,
+            select_label_1=select_label_1,
+            select_label_2=select_label_2,
+            select_label_3=select_label_3,
+            select_label_4=select_label_4,
+            select_label_5=select_label_5,
+            select_label_6=select_label_6,
             createRectangleMode=createRectangleMode,
             createCircleMode=createCircleMode,
             createLineMode=createLineMode,
@@ -648,6 +697,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 addPointToEdge,
                 None,
                 toggle_keep_prev_mode,
+                None,
+                select_label_0,
+                select_label_1,
+                select_label_2,
+                select_label_3,
+                select_label_4,
+                select_label_5,
+                select_label_6,
             ),
             # menu shown at right click
             menu=(
@@ -1031,6 +1088,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def setEditMode(self):
         self.toggleDrawMode(True)
+
+    def select_label_list_idx(self, value):
+        self.uniqLabelList.setCurrentRow(value)
 
     def showPreview(self):
         def format_shape(s):

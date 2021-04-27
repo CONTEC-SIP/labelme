@@ -107,3 +107,10 @@ shortcuts:
   add_point_to_edge: A
   edit_label: Ctrl+E
   toggle_keep_prev_mode: Ctrl+P
+  class_none : F1
+  class_building : F2
+  class_road : F3
+  class_plastic_house : F4
+  class_farmland : F5
+  class_forest : F6
+  class_waterside : F7
