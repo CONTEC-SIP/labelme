@@ -21,6 +21,7 @@ CURSOR_GRAB = QtCore.Qt.OpenHandCursor
 class Canvas(QtWidgets.QWidget):
 
     zoomRequest = QtCore.Signal(int, QtCore.QPoint)
+    panning_request = QtCore.Signal(QtCore.QPointF)
     scrollRequest = QtCore.Signal(int, int)
     newShape = QtCore.Signal()
     selectionChanged = QtCore.Signal(list)
@@ -76,6 +77,7 @@ class Canvas(QtWidgets.QWidget):
         self.hEdge = None
         self.prevhEdge = None
         self.movingShape = False
+        self.panning = False
         self._painter = QtGui.QPainter()
         self._cursor = CURSOR_DEFAULT
         # Menus:
@@ -191,7 +193,17 @@ class Canvas(QtWidgets.QWidget):
             return
 
         self.prevMovePoint = pos
-        self.restoreCursor()
+
+        if (
+                self.panning and
+                not self.drawing() and
+                not self.selectedVertex() and
+                not self.selectedShapes
+        ):
+            self.panning_request.emit(self.prevPoint - pos)
+            self.prevPoint = pos
+        else:
+            self.restoreCursor()
 
         # Polygon drawing.
         if self.drawing():
@@ -298,6 +310,7 @@ class Canvas(QtWidgets.QWidget):
                 break
         else:  # Nothing found, clear highlights, reset state.
             self.unHighlight()
+
         self.edgeSelected.emit(self.hEdge is not None, self.hShape)
         self.vertexSelected.emit(self.hVertex is not None)
 
@@ -367,6 +380,8 @@ class Canvas(QtWidgets.QWidget):
                 group_mode = int(ev.modifiers()) == QtCore.Qt.ControlModifier
                 self.selectShapePoint(pos, multiple_selection_mode=group_mode)
                 self.prevPoint = pos
+                self.overrideCursor(CURSOR_GRAB)
+                self.panning = True
                 self.repaint()
         elif ev.button() == QtCore.Qt.RightButton and self.editing():
             group_mode = int(ev.modifiers()) == QtCore.Qt.ControlModifier
@@ -385,21 +400,25 @@ class Canvas(QtWidgets.QWidget):
                 # Cancel the move by deleting the shadow copy.
                 self.selectedShapesCopy = []
                 self.repaint()
-        elif ev.button() == QtCore.Qt.LeftButton and self.selectedShapes:
-            self.overrideCursor(CURSOR_GRAB)
-            if (
-                self.editing()
-                and int(ev.modifiers()) == QtCore.Qt.ShiftModifier
-            ):
-                # Add point to line if: left-click + SHIFT on a line segment
-                self.addPointToEdge()
-        elif ev.button() == QtCore.Qt.LeftButton and self.selectedVertex():
-            if (
-                self.editing()
-                and int(ev.modifiers()) == QtCore.Qt.ShiftModifier
-            ):
-                # Delete point if: left-click + SHIFT on a point
-                self.removeSelectedPoint()
+        elif ev.button() == QtCore.Qt.LeftButton:
+            if self.selectedShapes:
+                self.overrideCursor(CURSOR_GRAB)
+                if (
+                        self.editing()
+                        and int(ev.modifiers()) == QtCore.Qt.ShiftModifier
+                ):
+                    # Add point to line if: left-click + SHIFT on a line segment
+                    self.addPointToEdge()
+            elif self.selectedVertex():
+                if (
+                        self.editing()
+                        and int(ev.modifiers()) == QtCore.Qt.ShiftModifier
+                ):
+                    # Delete point if: left-click + SHIFT on a point
+                    self.removeSelectedPoint()
+            else:
+                self.panning = False
+                self.restoreCursor()
 
         if self.movingShape and self.hShape:
             index = self.shapes.index(self.hShape)
@@ -411,6 +430,8 @@ class Canvas(QtWidgets.QWidget):
                 self.shapeMoved.emit()
 
             self.movingShape = False
+            self.panning = False
+            self.restoreCursor()
 
     def endMove(self, copy):
         assert self.selectedShapes and self.selectedShapesCopy

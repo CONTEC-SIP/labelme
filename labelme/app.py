@@ -8,6 +8,7 @@ import re
 import webbrowser
 
 import imgviz
+from numpy.distutils.misc_util import yellow_text
 from qtpy import QtCore
 from qtpy.QtCore import Qt
 from qtpy import QtGui
@@ -172,6 +173,7 @@ class MainWindow(QtWidgets.QMainWindow):
             num_backups=self._config["canvas"]["num_backups"],
         )
         self.canvas.zoomRequest.connect(self.zoomRequest)
+        self.canvas.panning_request.connect(self.panning_request)
 
         scrollArea = QtWidgets.QScrollArea()
         scrollArea.setWidget(self.canvas)
@@ -1441,6 +1443,17 @@ class MainWindow(QtWidgets.QMainWindow):
             self.setScroll(
                 Qt.Vertical,
                 self.scrollBars[Qt.Vertical].value() + y_shift,
+            )
+
+    def panning_request(self, pos):
+        if self.zoomWidget.value() > 100:
+            self.setScroll(
+                Qt.Horizontal,
+                self.scrollBars[Qt.Horizontal].value() + pos.x(),
+            )
+            self.setScroll(
+                Qt.Vertical,
+                self.scrollBars[Qt.Vertical].value() + pos.y(),
             )
 
     def setFitWindow(self, value=True):
