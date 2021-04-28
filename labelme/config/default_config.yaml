@@ -9,7 +9,7 @@ logger_level: info
 
 flags: null
 label_flags: null
-labels: { 'none', 'building', 'road', 'plastic_house', 'farmland', 'forest', 'waterside'}
+labels: { 'none', 'building', 'road', 'street', 'plastic_house', 'farmland', 'forest', 'waterside'}
 file_search: null
 sort_labels: false
 validate_label: null
@@ -20,6 +20,7 @@ shift_auto_shape_color: 0
 label_colors: { 'none': [0, 0, 0],
                 'building': [255, 0, 0],
                 'road': [255, 255, 0],
+                'street': [ 150, 150, 0 ],
                 'plastic_house': [255, 150, 0],
                 'farmland': [0, 0, 255],
                 'forest': [0, 255, 0],
