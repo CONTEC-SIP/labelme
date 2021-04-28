@@ -111,7 +111,8 @@ shortcuts:
   class_none : F1
   class_building : F2
   class_road : F3
-  class_plastic_house : F4
-  class_farmland : F5
-  class_forest : F6
-  class_waterside : F7
+  class_street : F4
+  class_plastic_house : F5
+  class_farmland : F6
+  class_forest : F7
+  class_waterside : F8

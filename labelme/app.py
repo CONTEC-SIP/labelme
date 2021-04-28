@@ -402,26 +402,32 @@ class MainWindow(QtWidgets.QMainWindow):
             "tag",
         )
         select_label_3 = action(
-            self.tr("plastic house"),
+            self.tr("street"),
             functools.partial(self.select_label_list_idx, 3),
-            shortcuts["class_plastic_house"],
+            shortcuts["class_street"],
             "tag",
         )
         select_label_4 = action(
-            self.tr("farmland"),
+            self.tr("plastic house"),
             functools.partial(self.select_label_list_idx, 4),
-            shortcuts["class_farmland"],
+            shortcuts["class_plastic_house"],
             "tag",
         )
         select_label_5 = action(
-            self.tr("forest"),
+            self.tr("farmland"),
             functools.partial(self.select_label_list_idx, 5),
-            shortcuts["class_forest"],
+            shortcuts["class_farmland"],
             "tag",
         )
         select_label_6 = action(
-            self.tr("waterside"),
+            self.tr("forest"),
             functools.partial(self.select_label_list_idx, 6),
+            shortcuts["class_forest"],
+            "tag",
+        )
+        select_label_7 = action(
+            self.tr("waterside"),
+            functools.partial(self.select_label_list_idx, 7),
             shortcuts["class_waterside"],
             "tag",
         )
@@ -668,6 +674,7 @@ class MainWindow(QtWidgets.QMainWindow):
             select_label_4=select_label_4,
             select_label_5=select_label_5,
             select_label_6=select_label_6,
+            select_label_7=select_label_7,
             createRectangleMode=createRectangleMode,
             createCircleMode=createCircleMode,
             createLineMode=createLineMode,
@@ -705,6 +712,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 select_label_4,
                 select_label_5,
                 select_label_6,
+                select_label_7,
             ),
             # menu shown at right click
             menu=(
