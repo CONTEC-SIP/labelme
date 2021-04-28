@@ -717,6 +717,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # menu shown at right click
             menu=(
                 createMode,
+                createRectangleMode,
                 editMode,
                 edit,
                 copy,
@@ -822,6 +823,7 @@ class MainWindow(QtWidgets.QMainWindow):
             save,
             None,
             createMode,
+            createRectangleMode,
             editMode,
             delete,
             None,
@@ -1438,6 +1440,7 @@ class MainWindow(QtWidgets.QMainWindow):
             text = items[0].data(Qt.UserRole)
         flags = {}
         group_id = None
+        # print('text, flags, group_id', text, flags, group_id)
         if self._config["display_label_popup"] or not text:
             previous_text = self.labelDialog.edit.text()
             text, flags, group_id = self.labelDialog.popUp(text)
