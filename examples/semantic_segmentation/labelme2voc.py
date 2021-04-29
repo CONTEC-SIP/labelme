@@ -41,15 +41,15 @@ def main():
 
     class_names = []
     class_name_to_id = {}
-    for i, line in enumerate(open(args.labels).readlines()):
-        class_id = i - 1  # starts with -1
+    for class_id, line in enumerate(open(args.labels).readlines()):
+        #class_id = i - 1  # starts with -1
         class_name = line.strip()
         class_name_to_id[class_name] = class_id
-        if class_id == -1:
-            assert class_name == "__ignore__"
-            continue
-        elif class_id == 0:
-            assert class_name == "_background_"
+        #if class_id == -1:
+        #    assert class_name == "none"
+        #    continue
+        if class_id == 0:
+            assert class_name == "none"
         class_names.append(class_name)
     class_names = tuple(class_names)
     print("class_names:", class_names)
@@ -87,16 +87,28 @@ def main():
             shapes=label_file.shapes,
             label_name_to_value=class_name_to_id,
         )
-        labelme.utils.lblsave(out_png_file, lbl)
+        #labelme.utils.lblsave(out_png_file, lbl)
+        lbl_pil = labelme.utils.lblreturn(lbl)
 
-        np.save(out_lbl_file, lbl)
+        #np.save(out_lbl_file, lbl)
+        lbl_pil.save(out_png_file)
+
+        colormap = [[0, 0, 0],
+                    [255, 0, 0],
+                    [255, 255, 0],
+                    [150, 150, 0],
+                    [255, 150, 0],
+                    [0, 0, 255],
+                    [0, 255, 0],
+                    [0, 255, 255]]
 
         if not args.noviz:
             viz = imgviz.label2rgb(
                 label=lbl,
-                img=imgviz.rgb2gray(img),
+                img=img,
                 font_size=15,
                 label_names=class_names,
+                colormap=np.array(colormap),
                 loc="rb",
             )
             imgviz.io.imsave(out_viz_file, viz)
