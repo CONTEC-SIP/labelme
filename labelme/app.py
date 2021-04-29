@@ -178,6 +178,87 @@ class MainWindow(QtWidgets.QMainWindow):
         scrollArea = QtWidgets.QScrollArea()
         scrollArea.setWidget(self.canvas)
         scrollArea.setWidgetResizable(True)
+        self.setStyleSheet("""
+        QScrollBar:horizontal {
+            border: none;
+            background: none;
+            height: 10px;
+            margin: 0px 10px 0 10px;
+        }
+
+        QScrollBar::handle:horizontal {
+            background: #018786;
+            min-width: 10px;
+        }
+
+        QScrollBar::add-line:horizontal {
+            background: none;
+            width: 10px;
+            subcontrol-position: right;
+            subcontrol-origin: margin;
+            
+        }
+
+        QScrollBar::sub-line:horizontal {
+            background: none;
+            width: 10px;
+            subcontrol-position: top left;
+            subcontrol-origin: margin;
+            position: absolute;
+        }
+
+        QScrollBar:left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
+            width: 10px;
+            height: 10px;
+            background: none;
+            image: url('./glass.png');
+        }
+
+        QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+            background: none;
+        }
+
+        /* VERTICAL */
+        QScrollBar:vertical {
+            border: none;
+            background: none;
+            width: 10px;
+            margin: 10px 0 10px 0;
+        }
+
+        QScrollBar::handle:vertical {
+            background: #018786;
+            min-height: 10px;
+        }
+
+        QScrollBar::add-line:vertical {
+            background: none;
+            height: 10px;
+            subcontrol-position: bottom;
+            subcontrol-origin: margin;
+        }
+
+        QScrollBar::sub-line:vertical {
+            background: none;
+            height: 10px;
+            subcontrol-position: top left;
+            subcontrol-origin: margin;
+            position: absolute;
+        }
+
+        QScrollBar:up-arrow:vertical, QScrollBar::down-arrow:vertical {
+            width: 10px;
+            height: 10px;
+            background: none;
+            image: url('./glass.png');
+        }
+
+        QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+            background: none;
+        }
+
+    """)
+
         self.scrollBars = {
             Qt.Vertical: scrollArea.verticalScrollBar(),
             Qt.Horizontal: scrollArea.horizontalScrollBar(),
