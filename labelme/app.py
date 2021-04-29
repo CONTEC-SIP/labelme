@@ -232,6 +232,12 @@ class MainWindow(QtWidgets.QMainWindow):
             "open",
             self.tr(u"Open Dir"),
         )
+        update_ = action(
+            self.tr("&Update"),
+            self.update_program,
+            icon="system-update",
+            tip=self.tr("Update Program"),
+        )
         openNextImg = action(
             self.tr("&Next Image"),
             self.openNextImg,
@@ -775,7 +781,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 quit,
             ),
         )
-        utils.addActions(self.menus.help, (help,))
+        utils.addActions(self.menus.help, (help, update_))
         utils.addActions(
             self.menus.view,
             (
@@ -1886,6 +1892,19 @@ class MainWindow(QtWidgets.QMainWindow):
         filename = str(filename)
         if filename:
             self.loadFile(filename)
+
+    def update_program(self):
+        os.chdir("labelme")
+        os.system("git pull")
+        os.system("rm ~/.labelmerc")
+
+        mb = QtWidgets.QMessageBox
+        msg = self.tr(
+            "update completed"
+        )
+        answer = mb.warning(self, self.tr("Attention"), msg, mb.Yes)
+        if answer == mb.Yes:
+            self.close()
 
     def changeOutputDirDialog(self, _value=False):
         default_output_dir = self.output_dir
