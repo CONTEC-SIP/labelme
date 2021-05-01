@@ -474,7 +474,6 @@ class MainWindow(QtWidgets.QMainWindow):
             shortcuts["show_preview"],
             "feBlend-icon",
             self.tr("Show preview mask"),
-            checkable=True,
             enabled=False,
         )
         select_label_0 = action(
@@ -578,14 +577,14 @@ class MainWindow(QtWidgets.QMainWindow):
         hideAll = action(
             self.tr("&Hide\nPolygons"),
             functools.partial(self.togglePolygons, False),
-            icon="eye",
+            icon="lurker",
             tip=self.tr("Hide all polygons"),
             enabled=False,
         )
         showAll = action(
             self.tr("&Show\nPolygons"),
             functools.partial(self.togglePolygons, True),
-            icon="eye",
+            icon="spotlight",
             tip=self.tr("Show all polygons"),
             enabled=False,
         )
@@ -1217,7 +1216,7 @@ class MainWindow(QtWidgets.QMainWindow):
             polygons=shapes,
             parent=self
         )
-        preview.setModal(False)
+        preview.setModal(True)
         preview.show()
 
     def updateFileMenu(self):
