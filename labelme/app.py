@@ -303,14 +303,21 @@ class MainWindow(QtWidgets.QMainWindow):
             self.tr("&Open"),
             self.openFile,
             shortcuts["open"],
-            "open",
+            "open_file",
             self.tr("Open image or label file"),
         )
         opendir = action(
             self.tr("&Open Dir"),
             self.openDirDialog,
             shortcuts["open_dir"],
-            "open",
+            "open_folder",
+            self.tr(u"Open Dir"),
+        )
+        open_json_dir = action(
+            self.tr("&Open Dir"),
+            functools.partial(self.openDirDialog, only_json=True),
+            shortcuts["open_dir_json"],
+            "open_json",
             self.tr(u"Open Dir"),
         )
         update_ = action(
@@ -849,6 +856,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 openNextImg,
                 openPrevImg,
                 opendir,
+                open_json_dir,
                 self.menus.recentFiles,
                 save,
                 saveAs,
@@ -904,6 +912,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actions.tool = (
             open_,
             opendir,
+            open_json_dir,
             openNextImg,
             openPrevImg,
             save,
@@ -2199,7 +2208,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.canvas.endMove(copy=False)
         self.setDirty()
 
-    def openDirDialog(self, _value=False, dirpath=None):
+    def openDirDialog(self, _value=False, dirpath=None, only_json=False):
         if not self.mayContinue():
             return
 
@@ -2220,7 +2229,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 | QtWidgets.QFileDialog.DontResolveSymlinks,
             )
         )
-        self.importDirImages(targetDirPath)
+        self.importDirImages(targetDirPath, only_json=only_json)
 
     @property
     def imageList(self):
@@ -2265,7 +2274,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.openNextImg()
 
-    def importDirImages(self, dirpath, pattern=None, load=True):
+    def importDirImages(self, dirpath, pattern=None, load=True, only_json=False):
         self.actions.openNextImg.setEnabled(True)
         self.actions.openPrevImg.setEnabled(True)
 
@@ -2275,7 +2284,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lastOpenDir = dirpath
         self.filename = None
         self.fileListWidget.clear()
-        for filename in self.scanAllImages(dirpath):
+        for filename in self.scanAllImages(dirpath, only_json):
             if pattern and pattern not in filename:
                 continue
             label_file = osp.splitext(filename)[0] + ".json"
@@ -2296,13 +2305,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self.fileListWidget.addItem(item)
         self.openNextImg(load=load)
 
-    def scanAllImages(self, folderPath):
-        extensions = [
-            ".%s" % fmt.data().decode().lower()
-            for fmt in QtGui.QImageReader.supportedImageFormats()
-        ]
-
-        # extensions += [".json"]
+    def scanAllImages(self, folderPath, only_json=False):
+        if only_json:
+            extensions = [".json"]
+        else:
+            extensions = [
+                ".%s" % fmt.data().decode().lower()
+                for fmt in QtGui.QImageReader.supportedImageFormats()
+            ]
 
         images = []
         for root, dirs, files in os.walk(folderPath):
