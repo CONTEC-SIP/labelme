@@ -1320,7 +1320,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not self.mayContinue():
             return
 
-        currIndex = self.imageList.index(str(item.text()))
+        currIndex = self.imageList.index(str(item.data(Qt.UserRole)))
         if currIndex < len(self.imageList):
             filename = self.imageList[currIndex]
             if filename:
@@ -1459,7 +1459,7 @@ class MainWindow(QtWidgets.QMainWindow):
         flags = {}
         for i in range(self.flag_widget.count()):
             item = self.flag_widget.item(i)
-            key = item.text()
+            key = item.data(Qt.UserRole)
             flag = item.checkState() == Qt.Checked
             flags[key] = flag
         try:
@@ -2229,7 +2229,7 @@ class MainWindow(QtWidgets.QMainWindow):
         lst = []
         for i in range(self.fileListWidget.count()):
             item = self.fileListWidget.item(i)
-            lst.append(item.text())
+            lst.append(item.data(Qt.UserRole))
         return lst
 
     def importDroppedImageFiles(self, imageFiles):
@@ -2249,6 +2249,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 label_file_without_path = osp.basename(label_file)
                 label_file = osp.join(self.output_dir, label_file_without_path)
             item = QtWidgets.QListWidgetItem(file)
+            item.setText(osp.basename(file))
+            item.setData(Qt.UserRole, file)
+            item.setToolTip(file)
             item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
             if QtCore.QFile.exists(label_file) and LabelFile.is_label_file(
                 label_file
@@ -2282,6 +2285,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 label_file_without_path = osp.basename(label_file)
                 label_file = osp.join(self.output_dir, label_file_without_path)
             item = QtWidgets.QListWidgetItem(filename)
+            item.setText(osp.basename(filename))
+            item.setData(Qt.UserRole, filename)
+            item.setToolTip(filename)
             item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
             if QtCore.QFile.exists(label_file) and LabelFile.is_label_file(
                 label_file
