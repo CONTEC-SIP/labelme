@@ -804,7 +804,6 @@ class MainWindow(QtWidgets.QMainWindow):
             # menu shown at right click
             menu=(
                 createMode,
-                createRectangleMode,
                 editMode,
                 edit,
                 copy,
@@ -910,7 +909,6 @@ class MainWindow(QtWidgets.QMainWindow):
             save,
             None,
             createMode,
-            createRectangleMode,
             editMode,
             delete,
             None,

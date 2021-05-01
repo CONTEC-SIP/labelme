@@ -94,7 +94,7 @@ shortcuts:
   fit_width: Ctrl+Shift+F
 
   create_polygon: W
-  create_rectangle: Ctrl+R
+  create_rectangle: null
   create_circle: null
   create_line: null
   create_point: null
