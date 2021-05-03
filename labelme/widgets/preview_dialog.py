@@ -18,10 +18,11 @@ class PreviewDialog(QtWidgets.QDialog):
         name_to_id = {'none': 0,
                       'building': 1,
                       'road': 2,
-                      'plastic_house': 3,
-                      'farmland': 4,
-                      'forest': 5,
-                      'waterside': 6}
+                      'street': 3,
+                      'plastic_house': 4,
+                      'farmland': 5,
+                      'forest': 6,
+                      'waterside': 7}
 
         mask, _ = utils.shapes_to_label(img.shape, polygons, name_to_id)
         qim = ImageQt(utils.lblreturn(mask))
