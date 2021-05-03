@@ -1514,8 +1514,8 @@ class MainWindow(QtWidgets.QMainWindow):
             )
             return False
 
-    def copySelectedShape(self):
-        added_shapes = self.canvas.copySelectedShapes()
+    def copySelectedShape(self, is_duplicate=True):
+        added_shapes = self.canvas.copySelectedShapes(is_duplicate)
         self.labelList.clearSelection()
         for shape in added_shapes:
             self.addLabel(shape)
@@ -2207,12 +2207,8 @@ class MainWindow(QtWidgets.QMainWindow):
         shape = item.shape()
         if shape is None:
             return
-        self.copySelectedShape()
+        self.copySelectedShape(False)
         self.labelList.removeItem(item)
-
-        #for item in self.labelList:
-        #    print(item.text)
-        #self.remLabels(self.canvas.deleteSelected())
 
     def deleteSelectedShape(self):
         yes, no = QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No
