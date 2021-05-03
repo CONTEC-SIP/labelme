@@ -534,11 +534,11 @@ class MainWindow(QtWidgets.QMainWindow):
             enabled=False,
         )
         bring_to_front = action(
-            self.tr("Bring to Front"),
+            self.tr("To Front"),
             self.bring_to_front_list,
             shortcuts["bring_to_front"],
-            "cancel",
-            self.tr("Bring the selected polygons to Front"),
+            "bring_to_front",
+            self.tr("Brings the selected polygon forward"),
             enabled=False,
         )
         copy = action(
@@ -930,7 +930,6 @@ class MainWindow(QtWidgets.QMainWindow):
             createMode,
             editMode,
             bring_to_front,
-            delete,
             None,
             preview,
             hideAll,
