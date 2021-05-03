@@ -4,6 +4,7 @@ import uuid
 import numpy as np
 import PIL.Image
 import PIL.ImageDraw
+import PyQt5.QtWidgets
 
 from labelme.logger import logger
 
@@ -42,8 +43,11 @@ def shape_to_mask(
         r = point_size
         draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline=1, fill=1)
     else:
-        assert len(xy) > 2, "Polygon must have points more than 2"
-        draw.polygon(xy=xy, outline=1, fill=1)
+        # assert len(xy) > 2, "Polygon must have points more than 2"
+        if not len(xy) > 2:
+            pass
+        else:
+            draw.polygon(xy=xy, outline=1, fill=1)
     mask = np.array(mask, dtype=bool)
     return mask
 
