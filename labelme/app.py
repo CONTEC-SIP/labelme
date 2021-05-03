@@ -533,6 +533,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self.tr("Delete the selected polygons"),
             enabled=False,
         )
+        bring_to_front = action(
+            self.tr("Bring to Front"),
+            self.bring_to_front_list,
+            shortcuts["bring_to_front"],
+            "cancel",
+            self.tr("Bring the selected polygons to Front"),
+            enabled=False,
+        )
         copy = action(
             self.tr("Duplicate Polygons"),
             self.copySelectedShape,
@@ -725,21 +733,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Lavel list context menu.
         labelMenu = QtWidgets.QMenu()
-        utils.addActions(labelMenu, (edit, delete))
+        utils.addActions(labelMenu, (edit, bring_to_front, delete))
         self.labelList.setContextMenuPolicy(Qt.CustomContextMenu)
         self.labelList.customContextMenuRequested.connect(
             self.popLabelListMenu
         )
 
         uniqLabelMenu = QtWidgets.QMenu()
-        utils.addActions(uniqLabelMenu, (hide_category, show_category))
-        self.uniqLabelList.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.uniqLabelList.customContextMenuRequested.connect(
-            self.popUniqLabelListMenu
-        )
-
-
-        # Store actions for further handling.
         self.actions = utils.struct(
             saveAuto=saveAuto,
             saveWithImageData=saveWithImageData,
@@ -750,6 +750,7 @@ class MainWindow(QtWidgets.QMainWindow):
             close=close,
             deleteFile=deleteFile,
             toggleKeepPrevMode=toggle_keep_prev_mode,
+            bring_to_front=bring_to_front,
             delete=delete,
             edit=edit,
             copy=copy,
@@ -789,6 +790,7 @@ class MainWindow(QtWidgets.QMainWindow):
             editMenu=(
                 edit,
                 copy,
+                bring_to_front,
                 delete,
                 None,
                 undo,
@@ -813,6 +815,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 editMode,
                 edit,
                 copy,
+                bring_to_front,
                 delete,
                 preview,
                 undo,
@@ -834,6 +837,14 @@ class MainWindow(QtWidgets.QMainWindow):
             ),
             onShapesPresent=(saveAs, hideAll, showAll),
         )
+        utils.addActions(uniqLabelMenu, (hide_category, show_category))
+        self.uniqLabelList.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.uniqLabelList.customContextMenuRequested.connect(
+            self.popUniqLabelListMenu
+        )
+
+
+        # Store actions for further handling.
 
         self.canvas.edgeSelected.connect(self.canvasShapeEdgeSelected)
         self.canvas.vertexSelected.connect(self.actions.removePoint.setEnabled)
@@ -918,6 +929,7 @@ class MainWindow(QtWidgets.QMainWindow):
             None,
             createMode,
             editMode,
+            bring_to_front,
             delete,
             None,
             preview,
@@ -1130,6 +1142,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actions.undoLastPoint.setEnabled(drawing)
         self.actions.undo.setEnabled(not drawing)
         self.actions.delete.setEnabled(not drawing)
+        self.actions.bring_to_front.setEnabled(not drawing)
 
     def toggleDrawMode(self, edit=True, createMode="polygon"):
         self.canvas.setEditing(edit)
@@ -1347,6 +1360,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._noSelectionSlot = False
         n_selected = len(selected_shapes)
         self.actions.delete.setEnabled(n_selected)
+        self.actions.bring_to_front.setEnabled(n_selected)
         self.actions.copy.setEnabled(n_selected)
         self.actions.edit.setEnabled(n_selected == 1)
 
@@ -2180,6 +2194,25 @@ class MainWindow(QtWidgets.QMainWindow):
             if self.noShapes():
                 for action in self.actions.onShapesPresent:
                     action.setEnabled(False)
+
+    def bring_to_front_list(self, item=None):
+        if item and not isinstance(item, LabelListWidgetItem):
+            raise TypeError("item must be LabelListWidgetItem type")
+        if not self.canvas.editing():
+            return
+        if not item:
+            item = self.currentItem()
+        if item is None:
+            return
+        shape = item.shape()
+        if shape is None:
+            return
+        self.copySelectedShape()
+        self.labelList.removeItem(item)
+
+        #for item in self.labelList:
+        #    print(item.text)
+        #self.remLabels(self.canvas.deleteSelected())
 
     def deleteSelectedShape(self):
         yes, no = QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No

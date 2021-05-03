@@ -102,6 +102,7 @@ shortcuts:
   create_linestrip: null
   edit_polygon: E
   show_preview: V
+  bring_to_front: F
   delete_polygon: S
   duplicate_polygon: Ctrl+D
   undo: Ctrl+Z
