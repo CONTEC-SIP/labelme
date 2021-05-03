@@ -4,6 +4,14 @@ import numpy as np
 import PIL.Image
 import imgviz
 
+colormap = [[0, 0, 0],
+            [255, 0, 0],
+            [255, 255, 0],
+            [150, 150, 0],
+            [255, 150, 0],
+            [0, 0, 255],
+            [0, 255, 0],
+            [0, 255, 255]]
 
 def lblsave(filename, lbl):
     if osp.splitext(filename)[1] != ".png":
@@ -24,13 +32,6 @@ def lblsave(filename, lbl):
 
 def lblreturn(lbl):
     lbl_pil = PIL.Image.fromarray(lbl.astype(np.uint8), mode="P")
-    colormap = [[0, 0, 0],
-                [255, 0, 0],
-                [255, 255, 0],
-                [255, 150, 0],
-                [0, 0, 255],
-                [0, 255, 0],
-                [0, 255, 255]]
     lbl_pil.putpalette(np.array(colormap, np.uint8).flatten())
 
     return lbl_pil
