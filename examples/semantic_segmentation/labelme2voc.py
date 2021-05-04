@@ -19,44 +19,30 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument("input_dir", help="input annotated directory")
-    parser.add_argument("output_dir", help="output dataset directory")
-    parser.add_argument("--labels", help="labels file", required=True)
+    parser.add_argument("output_dir", default='outputs', help="output dataset directory")
+    parser.add_argument("--labels", help="labels file")
     parser.add_argument(
         "--noviz", help="no visualization", action="store_true"
     )
     args = parser.parse_args()
 
-    if osp.exists(args.output_dir):
-        print("Output directory already exists:", args.output_dir)
+    out_dir = osp.join(args.input_dir, args.output_dir)
+    out_mask = osp.join(out_dir, 'Mask')
+    out_overlap = osp.join(out_dir, 'Overlap')
+
+    if osp.exists(out_dir):
+        print("Output directory already exists:", out_dir)
         sys.exit(1)
-    os.makedirs(args.output_dir)
-    os.makedirs(osp.join(args.output_dir, "JPEGImages"))
-    os.makedirs(osp.join(args.output_dir, "SegmentationClass"))
-    os.makedirs(osp.join(args.output_dir, "SegmentationClassPNG"))
+
     if not args.noviz:
         os.makedirs(
-            osp.join(args.output_dir, "SegmentationClassVisualization")
+            out_overlap
         )
     print("Creating dataset:", args.output_dir)
 
-    class_names = []
-    class_name_to_id = {}
-    for class_id, line in enumerate(open(args.labels).readlines()):
-        #class_id = i - 1  # starts with -1
-        class_name = line.strip()
-        class_name_to_id[class_name] = class_id
-        #if class_id == -1:
-        #    assert class_name == "none"
-        #    continue
-        if class_id == 0:
-            assert class_name == "none"
-        class_names.append(class_name)
-    class_names = tuple(class_names)
-    print("class_names:", class_names)
-    out_class_names_file = osp.join(args.output_dir, "class_names.txt")
-    with open(out_class_names_file, "w") as f:
-        f.writelines("\n".join(class_names))
-    print("Saved class_names:", out_class_names_file)
+    class_names = ['none', 'building', 'road', 'street', 'plastic_house', 'farmland', 'forest', 'waterside']
+    class_name_to_id = {'none': 0, 'building': 1, 'road': 2, 'street': 3, 'plastic_house': 4, 'farmland': 5,
+                        'forest': 6, 'waterside': 7}
 
     for filename in glob.glob(osp.join(args.input_dir, "*.json")):
         print("Generating dataset from:", filename)
@@ -64,22 +50,15 @@ def main():
         label_file = labelme.LabelFile(filename=filename)
 
         base = osp.splitext(osp.basename(filename))[0]
-        out_img_file = osp.join(args.output_dir, "JPEGImages", base + ".jpg")
-        out_lbl_file = osp.join(
-            args.output_dir, "SegmentationClass", base + ".npy"
-        )
         out_png_file = osp.join(
-            args.output_dir, "SegmentationClassPNG", base + ".png"
+            out_mask, base + ".png"
         )
         if not args.noviz:
             out_viz_file = osp.join(
-                args.output_dir,
-                "SegmentationClassVisualization",
-                base + ".jpg",
+                out_overlap,
+                base + ".png",
             )
 
-        with open(out_img_file, "wb") as f:
-            f.write(label_file.imageData)
         img = labelme.utils.img_data_to_arr(label_file.imageData)
 
         lbl, _ = labelme.utils.shapes_to_label(
@@ -87,10 +66,7 @@ def main():
             shapes=label_file.shapes,
             label_name_to_value=class_name_to_id,
         )
-        #labelme.utils.lblsave(out_png_file, lbl)
         lbl_pil = labelme.utils.lblreturn(lbl)
-
-        #np.save(out_lbl_file, lbl)
         lbl_pil.save(out_png_file)
 
         colormap = [[0, 0, 0],
