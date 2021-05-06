@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import functools
+import glob
 import math
 import os
 import os.path as osp
 import re
 import webbrowser
+import shutil
+import numpy as np
 
 import imgviz
 from numpy.distutils.misc_util import yellow_text
@@ -374,6 +377,13 @@ class MainWindow(QtWidgets.QMainWindow):
             shortcut=shortcuts["save_to"],
             icon="open",
             tip=self.tr(u"Change where annotations are loaded/saved"),
+        )
+        generate_mask = action(
+            self.tr("&Generate Mask"),
+            shortcut=shortcuts["generate_mask"],
+            slot=self.generate_mask,
+            icon="generate_mask",
+            tip=self.tr(u"Generate Mask"),
         )
 
         saveAuto = action(
@@ -744,6 +754,7 @@ class MainWindow(QtWidgets.QMainWindow):
             saveAuto=saveAuto,
             saveWithImageData=saveWithImageData,
             changeOutputDir=changeOutputDir,
+            generate_mask=generate_mask,
             save=save,
             saveAs=saveAs,
             open=open_,
@@ -872,6 +883,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 saveAs,
                 saveAuto,
                 changeOutputDir,
+                None,
+                generate_mask,
+                None,
                 saveWithImageData,
                 close,
                 deleteFile,
@@ -2053,6 +2067,103 @@ class MainWindow(QtWidgets.QMainWindow):
             self.close()
         else:
             self._saveFile(self.saveFileDialog())
+
+    def generate_mask(self):
+        class_names = ['none', 'building', 'road', 'street', 'plastic_house', 'farmland', 'forest', 'waterside']
+        class_name_to_id = {'none': 0, 'building': 1, 'road': 2, 'street': 3, 'plastic_house': 4, 'farmland': 5,
+                            'forest': 6, 'waterside': 7}
+        if not self.mayContinue():
+            return
+
+        if self.fileListWidget.count():
+            filelist = self.imageList
+        else:
+            input_dir = QtWidgets.QFileDialog.getExistingDirectory(
+                self,
+                self.tr("Import Annotations in Directory"),
+                self.currentPath(),
+                QtWidgets.QFileDialog.ShowDirsOnly
+                | QtWidgets.QFileDialog.DontResolveSymlinks,
+            )
+            filelist = []
+            for filename in glob.glob(osp.join(input_dir, '*.json')):
+                filelist.append(filename)
+
+        default_output_dir = self.output_dir
+        if default_output_dir is None and self.filename:
+            default_output_dir = osp.dirname(self.filename)
+        if default_output_dir is None:
+            default_output_dir = self.currentPath()
+
+        output_dir = QtWidgets.QFileDialog.getExistingDirectory(
+            self,
+            self.tr("Save Mask in Directory"),
+            default_output_dir,
+            QtWidgets.QFileDialog.ShowDirsOnly
+            | QtWidgets.QFileDialog.DontResolveSymlinks,
+        )
+
+        mb = QtWidgets.QMessageBox
+        msg = self.tr(
+            "Generating mask will be erase what's existing,"
+            "proceed anyway?"
+        )
+        answer = mb.warning(self, self.tr("Attention"), msg, mb.Yes | mb.No)
+        if answer != mb.Yes:
+            return
+
+        out_mask = osp.join(output_dir, 'Mask')
+        out_overlap = osp.join(output_dir, 'Overlap')
+
+        self.check_exist_dir(out_mask, True)
+        self.check_exist_dir(out_overlap, True)
+
+        progress = QtWidgets.QProgressDialog("Generate Masks...", "Abort", 0, len(filelist), self)
+        progress.setWindowModality(Qt.WindowModal)
+
+        for idx, filename in enumerate(filelist):
+            progress.setValue(idx)
+            label_file = LabelFile(filename=filename)
+
+            base = osp.splitext(osp.basename(filename))[0]
+            out_png_file = osp.join(
+                out_mask, base + ".png"
+            )
+            out_viz_file = osp.join(
+                out_overlap,
+                base + ".png",
+            )
+
+            img = utils.img_data_to_arr(label_file.imageData)
+
+            lbl, _ = utils.shapes_to_label(
+                img_shape=img.shape,
+                shapes=label_file.shapes,
+                label_name_to_value=class_name_to_id,
+            )
+            lbl_pil = utils.lblreturn(lbl)
+            lbl_pil.save(out_png_file)
+
+            viz = imgviz.label2rgb(
+                label=lbl,
+                img=img,
+                font_size=15,
+                label_names=class_names,
+                colormap=np.array(utils.colormap),
+                loc="rb",
+            )
+            imgviz.io.imsave(out_viz_file, viz)
+        progress.setValue(len(filelist))
+
+    def check_exist_dir(self, check_dir, is_remove_sub_dir=True):
+        if not os.path.exists(check_dir):
+            os.makedirs(check_dir)
+        elif os.path.exists(check_dir) and is_remove_sub_dir:
+            for file in os.scandir(check_dir):
+                if os.path.isdir(file.path):
+                    shutil.rmtree(file.path)
+                elif os.path.isfile(file.path):
+                    os.remove(file.path)
 
     def saveFileAs(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"
