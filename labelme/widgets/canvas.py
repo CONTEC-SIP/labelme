@@ -382,7 +382,7 @@ class Canvas(QtWidgets.QWidget):
                 self.prevPoint = pos
                 if not self.selectedShapes:
                     self.overrideCursor(CURSOR_GRAB)
-                    self.panning = True
+                    self.panning = False
                 self.repaint()
         elif ev.button() == QtCore.Qt.RightButton and self.editing():
             group_mode = int(ev.modifiers()) == QtCore.Qt.ControlModifier
