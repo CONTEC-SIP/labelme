@@ -83,7 +83,7 @@ shortcuts:
   save: Ctrl+S
   save_as: Ctrl+Shift+S
   save_to: null
-  generate_mask: Ctrl+E
+  generate_mask: Ctrl+M
   delete_file: Ctrl+Delete
 
   open_next: [Ctrl+Shift+D]
