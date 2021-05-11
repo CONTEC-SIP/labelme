@@ -37,6 +37,8 @@ from labelme.widgets import UniqueLabelQListWidget
 from labelme.widgets import ZoomWidget
 from labelme.widgets import preview_dialog
 
+from PIL import Image
+
 
 # FIXME
 # - [medium] Set max zoom value to something big enough for FitWidth/Window
@@ -199,7 +201,7 @@ class MainWindow(QtWidgets.QMainWindow):
             width: 10px;
             subcontrol-position: right;
             subcontrol-origin: margin;
-            
+
         }
 
         QScrollBar::sub-line:horizontal {
@@ -2144,15 +2146,22 @@ class MainWindow(QtWidgets.QMainWindow):
             lbl_pil = utils.lblreturn(lbl)
             lbl_pil.save(out_png_file)
 
-            viz = imgviz.label2rgb(
-                label=lbl,
-                img=img,
-                font_size=15,
-                label_names=class_names,
-                colormap=np.array(utils.colormap),
-                loc="rb",
-            )
-            imgviz.io.imsave(out_viz_file, viz)
+            # [Modified] None class is not visualize on image.
+            ##############################################################################
+            viz = img.copy()
+            alpha = 0.5
+            for i in range(len(class_names)):
+                color = utils.colormap[i]
+
+                if i > 0:
+                    mask_ = lbl[:,:] == i
+                    viz[mask_,0] = ( (color[0] * alpha) + (viz[mask_,0] * (1 - alpha)) ).astype(np.uint8)
+                    viz[mask_,1] = ( (color[1] * alpha) + (viz[mask_,1] * (1 - alpha)) ).astype(np.uint8)
+                    viz[mask_,2] = ( (color[2] * alpha) + (viz[mask_,2] * (1 - alpha)) ).astype(np.uint8)
+
+            Image.fromarray(viz).save(out_viz_file)
+            ##############################################################################
+
         progress.setValue(len(filelist))
 
     def check_exist_dir(self, check_dir, is_remove_sub_dir=True):
