@@ -2162,18 +2162,6 @@ class MainWindow(QtWidgets.QMainWindow):
             Image.fromarray(viz).save(out_viz_file)
             ##############################################################################
 
-            ##############################################################################
-            # viz = imgviz.label2rgb(
-            #     label=lbl,
-            #     img=img,
-            #     font_size=15,
-            #     label_names=class_names,
-            #     colormap=np.array(utils.colormap),
-            #     loc="rb",
-            # )
-            # imgviz.io.imsave(out_viz_file, viz)
-            ##############################################################################
-
         progress.setValue(len(filelist))
 
     def check_exist_dir(self, check_dir, is_remove_sub_dir=True):
