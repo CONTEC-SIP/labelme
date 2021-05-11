@@ -77,6 +77,7 @@ class LabelListWidgetItem(QtGui.QStandardItem):
         self.setCheckable(True)
         self.setCheckState(Qt.Checked)
         self.setEditable(False)
+        self.setDragEnabled(False)
         self.setTextAlignment(Qt.AlignBottom)
 
     def clone(self):
